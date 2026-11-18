@@ -1,0 +1,39 @@
+name: Daily DSA Green-Graph Bot
+
+on:
+  schedule:
+    # Runs daily at 7:00 PM IST (13:30 UTC)
+    - cron: '30 13 * * *'
+  workflow_dispatch: # Lets you test with 1 click from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  generate-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Google GenAI SDK
+        run: pip install google-genai
+
+      - name: Generate Today's DSA Solution
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python generate_dsa.py
+
+      - name: Commit and Push to GitHub
+        run: |
+          git config user.name "Nayan Gadhiya"
+          git config user.email "nayanpatel4107@gmail.com"
+          git add .
+          git diff --staged --quiet || git commit -m "feat(dsa): add daily DSA solution and update tracker [$(date -u +'%Y-%m-%d')]"
+          git push
+          
